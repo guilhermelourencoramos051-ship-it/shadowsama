@@ -1,12 +1,12 @@
--- TSB ADMIN TOOL - VERSÃO FREE
--- Para jogadores normais com key
+-- TSB ADMIN TOOL - VERSÃO ADMIN
+-- Apenas para: LOS67ZITOSDIZEN67
 -- PlaceID: 10449761463
 
-if _G.TSBFreeLoaded then
-    warn("Script free já está carregado!")
+if _G.TSBAdminLoaded then
+    warn("Script admin já está carregado!")
     return
 end
-_G.TSBFreeLoaded = true
+_G.TSBAdminLoaded = true
 
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
@@ -14,12 +14,22 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 local Camera = Workspace.CurrentCamera
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
+
+-- ============ CONFIGURAÇÃO ============
+local adminUser = "LOS67ZITOSDIZEN67"
+local isRealAdmin = (player.Name == adminUser)
+
+if not isRealAdmin then
+    warn("Acesso negado! Apenas admin pode usar esta versão.")
+    return
+end
 
 -- ============ THEME ============
 local THEME = {
@@ -34,14 +44,15 @@ local THEME = {
 
 -- ============ CRIAR UI ============
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TSBFreeUI"
+screenGui.Name = "TSBAdminUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
 
+-- Main Window
 local mainWindow = Instance.new("Frame")
 mainWindow.Name = "MainWindow"
-mainWindow.Size = UDim2.new(0, 600, 0, 550)
-mainWindow.Position = UDim2.new(0.5, -300, 0.5, -275)
+mainWindow.Size = UDim2.new(0, 700, 0, 600)
+mainWindow.Position = UDim2.new(0.5, -350, 0.5, -300)
 mainWindow.BackgroundColor3 = THEME.Dark
 mainWindow.BorderSizePixel = 0
 mainWindow.Draggable = true
@@ -71,7 +82,7 @@ headerCorner.Parent = header
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.7, 0, 1, 0)
 title.BackgroundTransparency = 1
-title.Text = "💨 TSB FREE PLAYER TOOL"
+title.Text = "👑 TSB ADMIN TOOL - " .. player.Name
 title.TextColor3 = THEME.Accent
 title.TextSize = 16
 title.Font = Enum.Font.GothamBold
@@ -127,9 +138,12 @@ tabScroll.Parent = tabBar
 local tabs = {
     "⚔️ Combat",
     "💨 Dash",
+    "📊 Stats",
     "🌐 TP",
+    "🏟️ Arena",
     "👁️ Visuals",
-    "🔧 Utils"
+    "🔧 Utils",
+    "👞 Troll"
 }
 
 local tabButtons = {}
@@ -137,7 +151,7 @@ local tabContents = {}
 
 for i, tabName in ipairs(tabs) do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 100, 1, 0)
+    btn.Size = UDim2.new(0, 80, 1, 0)
     btn.BackgroundColor3 = THEME.Primary
     btn.TextColor3 = THEME.Text
     btn.Text = tabName
@@ -228,28 +242,33 @@ end
 -- ============ TAB 1: COMBAT ============
 local combatTab = tabContents[1]
 
-createToggle(combatTab, "⚡ No Stun", function(enabled)
+createToggle(combatTab, "⚡ No Stun (Agressivo)", function(enabled)
     if enabled then
         local noStunConnection
         noStunConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then noStunConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then noStunConnection:Disconnect() return end
             
             if character and humanoidRootPart then
+                humanoidRootPart:SetNetworkOwner(player)
+                
                 for _, obj in ipairs(character:GetChildren()) do
                     if obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") then
                         obj:Destroy()
                     end
                 end
                 
+                humanoid.Parent = character
                 humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed, false)
                 humanoid:SetStateEnabled(Enum.HumanoidStateType.Stunned, false)
+                
                 humanoid:ChangeState(Enum.HumanoidStateType.Running)
             end
         end)
-        _G.NoStunConnectionFree = noStunConnection
+        _G.NoStunConnection = noStunConnection
     else
-        if _G.NoStunConnectionFree then
-            _G.NoStunConnectionFree:Disconnect()
+        if _G.NoStunConnection then
+            _G.NoStunConnection:Disconnect()
         end
     end
 end, 1)
@@ -258,15 +277,15 @@ createToggle(combatTab, "👻 Anti-Ragdoll", function(enabled)
     if enabled then
         local antiRagConnection
         antiRagConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then antiRagConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then antiRagConnection:Disconnect() return end
             if humanoid then
                 humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
             end
         end)
-        _G.AntiRagConnectionFree = antiRagConnection
+        _G.AntiRagConnection = antiRagConnection
     else
-        if _G.AntiRagConnectionFree then
-            _G.AntiRagConnectionFree:Disconnect()
+        if _G.AntiRagConnection then
+            _G.AntiRagConnection:Disconnect()
         end
     end
 end, 2)
@@ -275,7 +294,7 @@ createToggle(combatTab, "🛡️ Auto Block", function(enabled)
     if enabled then
         local autoBlockConnection
         autoBlockConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then autoBlockConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then autoBlockConnection:Disconnect() return end
             
             for _, enemy in ipairs(Players:GetPlayers()) do
                 if enemy == player then continue end
@@ -289,10 +308,10 @@ createToggle(combatTab, "🛡️ Auto Block", function(enabled)
                 end
             end
         end)
-        _G.AutoBlockConnectionFree = autoBlockConnection
+        _G.AutoBlockConnection = autoBlockConnection
     else
-        if _G.AutoBlockConnectionFree then
-            _G.AutoBlockConnectionFree:Disconnect()
+        if _G.AutoBlockConnection then
+            _G.AutoBlockConnection:Disconnect()
         end
     end
 end, 3)
@@ -301,7 +320,7 @@ createToggle(combatTab, "💪 Auto Punch", function(enabled)
     if enabled then
         local autoPunchConnection
         autoPunchConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then autoPunchConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then autoPunchConnection:Disconnect() return end
             
             for _, enemy in ipairs(Players:GetPlayers()) do
                 if enemy == player then continue end
@@ -315,37 +334,97 @@ createToggle(combatTab, "💪 Auto Punch", function(enabled)
                 end
             end
         end)
-        _G.AutoPunchConnectionFree = autoPunchConnection
+        _G.AutoPunchConnection = autoPunchConnection
     else
-        if _G.AutoPunchConnectionFree then
-            _G.AutoPunchConnectionFree:Disconnect()
+        if _G.AutoPunchConnection then
+            _G.AutoPunchConnection:Disconnect()
         end
     end
 end, 4)
+
+createToggle(combatTab, "🌟 Auto Awakening", function(enabled)
+    if enabled then
+        local autoAwakeConnection
+        autoAwakeConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then autoAwakeConnection:Disconnect() return end
+            
+            UserInputService:SendKeyEvent(true, Enum.KeyCode.G, false)
+            task.wait(0.05)
+            UserInputService:SendKeyEvent(false, Enum.KeyCode.G, false)
+            task.wait(3)
+        end)
+        _G.AutoAwakeConnection = autoAwakeConnection
+    else
+        if _G.AutoAwakeConnection then
+            _G.AutoAwakeConnection:Disconnect()
+        end
+    end
+end, 5)
 
 createToggle(combatTab, "💚 God Mode", function(enabled)
     if enabled then
         local godModeConnection
         godModeConnection = RunService.Heartbeat:Connect(function()
-            if not _G.TSBFreeLoaded then godModeConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then godModeConnection:Disconnect() return end
             humanoid.Health = humanoid.MaxHealth
         end)
-        _G.GodModeConnectionFree = godModeConnection
+        _G.GodModeConnection = godModeConnection
     else
-        if _G.GodModeConnectionFree then
-            _G.GodModeConnectionFree:Disconnect()
+        if _G.GodModeConnection then
+            _G.GodModeConnection:Disconnect()
         end
     end
-end, 5)
+end, 6)
+
+createToggle(combatTab, "⬆️ No Knockback", function(enabled)
+    if enabled then
+        local noKBConnection
+        noKBConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then noKBConnection:Disconnect() return end
+            
+            humanoidRootPart.Velocity = Vector3.new(0, humanoidRootPart.Velocity.Y, 0)
+        end)
+        _G.NoKBConnection = noKBConnection
+    else
+        if _G.NoKBConnection then
+            _G.NoKBConnection:Disconnect()
+        end
+    end
+end, 7)
+
+createToggle(combatTab, "🧲 Noclip", function(enabled)
+    if enabled then
+        local noclipConnection
+        noclipConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then noclipConnection:Disconnect() return end
+            
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+        _G.NoclipConnection = noclipConnection
+    else
+        if _G.NoclipConnection then
+            _G.NoclipConnection:Disconnect()
+        end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end, 8)
 
 -- ============ TAB 2: DASH ============
 local dashTab = tabContents[2]
 
-createToggle(dashTab, "💨 No Dash CD", function(enabled)
+createToggle(dashTab, "💨 No Dash CD (Todos)", function(enabled)
     if enabled then
         local noDashConnection
         noDashConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then noDashConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then noDashConnection:Disconnect() return end
             
             for _, attr in ipairs(character:GetAttributes()) do
                 if attr:lower():match("dash") or attr:lower():match("cd") then
@@ -353,16 +432,51 @@ createToggle(dashTab, "💨 No Dash CD", function(enabled)
                 end
             end
         end)
-        _G.NoDashConnectionFree = noDashConnection
+        _G.NoDashConnection = noDashConnection
     else
-        if _G.NoDashConnectionFree then
-            _G.NoDashConnectionFree:Disconnect()
+        if _G.NoDashConnection then
+            _G.NoDashConnection:Disconnect()
         end
     end
 end, 1)
 
--- ============ TAB 3: TP ============
-local tpTab = tabContents[3]
+-- ============ TAB 3: STATS ============
+local statsTab = tabContents[3]
+
+createToggle(statsTab, "🏃 WalkSpeed Blindado", function(enabled)
+    if enabled then
+        local walkSpeedConnection
+        walkSpeedConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then walkSpeedConnection:Disconnect() return end
+            humanoid.WalkSpeed = 20
+        end)
+        _G.WalkSpeedConnection = walkSpeedConnection
+    else
+        if _G.WalkSpeedConnection then
+            _G.WalkSpeedConnection:Disconnect()
+        end
+        humanoid.WalkSpeed = 16
+    end
+end, 1)
+
+createToggle(statsTab, "📈 JumpPower Blindado", function(enabled)
+    if enabled then
+        local jumpPowerConnection
+        jumpPowerConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then jumpPowerConnection:Disconnect() return end
+            humanoid.JumpPower = 50
+        end)
+        _G.JumpPowerConnection = jumpPowerConnection
+    else
+        if _G.JumpPowerConnection then
+            _G.JumpPowerConnection:Disconnect()
+        end
+        humanoid.JumpPower = 0
+    end
+end, 2)
+
+-- ============ TAB 4: TP ============
+local tpTab = tabContents[4]
 
 local tpBtn1 = Instance.new("TextButton")
 tpBtn1.Size = UDim2.new(1, 0, 0, 30)
@@ -424,9 +538,30 @@ tpBtn2.MouseButton1Click:Connect(function()
     end
 end)
 
+-- TP JUMP
+local tpJumpBtn = Instance.new("TextButton")
+tpJumpBtn.Size = UDim2.new(1, 0, 0, 30)
+tpJumpBtn.BackgroundColor3 = THEME.Primary
+tpJumpBtn.Text = "⬆️ TP Jump"
+tpJumpBtn.TextColor3 = THEME.Text
+tpJumpBtn.TextSize = 12
+tpJumpBtn.Font = Enum.Font.GothamBold
+tpJumpBtn.BorderSizePixel = 0
+tpJumpBtn.LayoutOrder = 3
+tpJumpBtn.Parent = tpTab
+
+local tpJumpCorner = Instance.new("UICorner")
+tpJumpCorner.CornerRadius = UDim.new(0, 6)
+tpJumpCorner.Parent = tpJumpBtn
+
+tpJumpBtn.MouseButton1Click:Connect(function()
+    humanoidRootPart.CFrame = humanoidRootPart.CFrame + Vector3.new(0, 50, 0)
+end)
+
 -- FLY MODE
 local flyToggle = createToggle(tpTab, "✈️ Fly Mode", function(enabled)
     if enabled then
+        local flying = false
         local speed = 50
         
         local bodyVelocity = Instance.new("BodyVelocity")
@@ -436,7 +571,7 @@ local flyToggle = createToggle(tpTab, "✈️ Fly Mode", function(enabled)
         
         local flyConnection
         flyConnection = RunService.RenderStepped:Connect(function()
-            if not _G.TSBFreeLoaded then flyConnection:Disconnect() return end
+            if not _G.TSBAdminLoaded then flyConnection:Disconnect() return end
             
             local moveDirection = Vector3.new(0, 0, 0)
             
@@ -461,19 +596,56 @@ local flyToggle = createToggle(tpTab, "✈️ Fly Mode", function(enabled)
             
             bodyVelocity.Velocity = moveDirection.Unit * speed
         end)
-        _G.FlyConnectionFree = flyConnection
+        _G.FlyConnection = flyConnection
     else
-        if _G.FlyConnectionFree then
-            _G.FlyConnectionFree:Disconnect()
+        if _G.FlyConnection then
+            _G.FlyConnection:Disconnect()
         end
         if humanoidRootPart:FindFirstChild("BodyVelocity") then
             humanoidRootPart:FindFirstChild("BodyVelocity"):Destroy()
         end
     end
-end, 3)
+end, 4)
 
--- ============ TAB 4: VISUALS ============
-local visualsTab = tabContents[4]
+-- ============ TAB 5: ARENA ============
+local arenaTab = tabContents[5]
+
+createToggle(arenaTab, "🏟️ Arena Sub (Seguidor)", function(enabled)
+    if enabled then
+        local targetEnemy = nil
+        local distance = 5
+        
+        local arenaConnection
+        arenaConnection = RunService.RenderStepped:Connect(function()
+            if not _G.TSBAdminLoaded then arenaConnection:Disconnect() return end
+            
+            if not targetEnemy or not targetEnemy.Character then
+                for _, enemy in ipairs(Players:GetPlayers()) do
+                    if enemy == player and enemy.Character then
+                        targetEnemy = enemy
+                        break
+                    end
+                end
+            end
+            
+            if targetEnemy and targetEnemy.Character then
+                local enemyHRP = targetEnemy.Character:FindFirstChild("HumanoidRootPart")
+                if enemyHRP then
+                    local targetPos = enemyHRP.Position + (enemyHRP.CFrame.LookVector * -distance) + Vector3.new(0, -3, 0)
+                    humanoidRootPart.CFrame = CFrame.new(targetPos)
+                end
+            end
+        end)
+        _G.ArenaConnection = arenaConnection
+    else
+        if _G.ArenaConnection then
+            _G.ArenaConnection:Disconnect()
+        end
+    end
+end, 1)
+
+-- ============ TAB 6: VISUALS ============
+local visualsTab = tabContents[6]
 
 createToggle(visualsTab, "👁️ Player ESP", function(enabled)
     if enabled then
@@ -507,16 +679,16 @@ createToggle(visualsTab, "⭐ Inf Jump", function(enabled)
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end
         end)
-        _G.InfJumpConnectionFree = infJumpConnection
+        _G.InfJumpConnection = infJumpConnection
     else
-        if _G.InfJumpConnectionFree then
-            _G.InfJumpConnectionFree:Disconnect()
+        if _G.InfJumpConnection then
+            _G.InfJumpConnection:Disconnect()
         end
     end
 end, 2)
 
--- ============ TAB 5: UTILS ============
-local utilsTab = tabContents[5]
+-- ============ TAB 7: UTILS ============
+local utilsTab = tabContents[7]
 
 local rejoinBtn = Instance.new("TextButton")
 rejoinBtn.Size = UDim2.new(1, 0, 0, 30)
@@ -537,26 +709,108 @@ rejoinBtn.MouseButton1Click:Connect(function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, player)
 end)
 
+createToggle(utilsTab, "🎯 Chat Spammer", function(enabled)
+    if enabled then
+        local spamConnection
+        spamConnection = RunService.Heartbeat:Connect(function()
+            if not _G.TSBAdminLoaded then spamConnection:Disconnect() return end
+            game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SendMessageRequest"):FireServer("test message", "All")
+            task.wait(5)
+        end)
+        _G.SpamConnection = spamConnection
+    else
+        if _G.SpamConnection then
+            _G.SpamConnection:Disconnect()
+        end
+    end
+end, 2)
+
+-- ============ TAB 8: TROLL ============
+local trollTab = tabContents[8]
+
+local flingBtn = Instance.new("TextButton")
+flingBtn.Size = UDim2.new(1, 0, 0, 30)
+flingBtn.BackgroundColor3 = THEME.Error
+flingBtn.Text = "🌀 Fling (Selecione alvo no chat: ;fling Nome)"
+flingBtn.TextColor3 = THEME.Text
+flingBtn.TextSize = 10
+flingBtn.Font = Enum.Font.GothamBold
+flingBtn.BorderSizePixel = 0
+flingBtn.LayoutOrder = 1
+flingBtn.Parent = trollTab
+
+local flingCorner = Instance.new("UICorner")
+flingCorner.CornerRadius = UDim.new(0, 6)
+flingCorner.Parent = flingBtn
+
+local freezeBtn = Instance.new("TextButton")
+freezeBtn.Size = UDim2.new(1, 0, 0, 30)
+freezeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+freezeBtn.Text = "❄️ Congelar (;freeze Nome)"
+freezeBtn.TextColor3 = THEME.Text
+freezeBtn.TextSize = 10
+freezeBtn.Font = Enum.Font.GothamBold
+freezeBtn.BorderSizePixel = 0
+freezeBtn.LayoutOrder = 2
+freezeBtn.Parent = trollTab
+
+local freezeCorner = Instance.new("UICorner")
+freezeCorner.CornerRadius = UDim.new(0, 6)
+freezeCorner.Parent = freezeBtn
+
+local killBtn = Instance.new("TextButton")
+killBtn.Size = UDim2.new(1, 0, 0, 30)
+killBtn.BackgroundColor3 = THEME.Error
+killBtn.Text = "☠️ Eliminar (;kill Nome)"
+killBtn.TextColor3 = THEME.Text
+killBtn.TextSize = 10
+killBtn.Font = Enum.Font.GothamBold
+killBtn.BorderSizePixel = 0
+killBtn.LayoutOrder = 3
+killBtn.Parent = trollTab
+
+local killCorner = Instance.new("UICorner")
+killCorner.CornerRadius = UDim.new(0, 6)
+killCorner.Parent = killBtn
+
+local kickBtn = Instance.new("TextButton")
+kickBtn.Size = UDim2.new(1, 0, 0, 30)
+kickBtn.BackgroundColor3 = THEME.Error
+kickBtn.Text = "👞 Kickar (;kick Nome)"
+kickBtn.TextColor3 = THEME.Text
+kickBtn.TextSize = 10
+kickBtn.Font = Enum.Font.GothamBold
+kickBtn.BorderSizePixel = 0
+kickBtn.LayoutOrder = 4
+kickBtn.Parent = trollTab
+
+local kickCorner = Instance.new("UICorner")
+kickCorner.CornerRadius = UDim.new(0, 6)
+kickCorner.Parent = kickBtn
+
 -- ============ EVENTOS ============
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
-    _G.TSBFreeLoaded = false
+    _G.TSBAdminLoaded = false
     
-    if _G.NoStunConnectionFree then _G.NoStunConnectionFree:Disconnect() end
-    if _G.AntiRagConnectionFree then _G.AntiRagConnectionFree:Disconnect() end
-    if _G.AutoBlockConnectionFree then _G.AutoBlockConnectionFree:Disconnect() end
-    if _G.AutoPunchConnectionFree then _G.AutoPunchConnectionFree:Disconnect() end
-    if _G.GodModeConnectionFree then _G.GodModeConnectionFree:Disconnect() end
+    if _G.NoStunConnection then _G.NoStunConnection:Disconnect() end
+    if _G.AntiRagConnection then _G.AntiRagConnection:Disconnect() end
+    if _G.AutoBlockConnection then _G.AutoBlockConnection:Disconnect() end
+    if _G.AutoPunchConnection then _G.AutoPunchConnection:Disconnect() end
+    if _G.AutoAwakeConnection then _G.AutoAwakeConnection:Disconnect() end
+    if _G.GodModeConnection then _G.GodModeConnection:Disconnect() end
+    if _G.NoKBConnection then _G.NoKBConnection:Disconnect() end
+    if _G.NoclipConnection then _G.NoclipConnection:Disconnect() end
 end)
 
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
-    mainWindow.Size = minimized and UDim2.new(0, 250, 0, 50) or UDim2.new(0, 600, 0, 550)
+    mainWindow.Size = minimized and UDim2.new(0, 300, 0, 50) or UDim2.new(0, 700, 0, 600)
     header.Visible = true
     tabBar.Visible = not minimized
     for _, content in ipairs(tabContents) do
-        content.Visible = not minimized
+        content.Visible = not minimized and (content.Parent == mainWindow)
     end
 end)
 
@@ -573,4 +827,5 @@ player.CharacterAdded:Connect(function(newChar)
     humanoid = character:WaitForChild("Humanoid")
 end)
 
-print("✓ TSB Free Script carregado!")
+print("✓ TSB Admin Tool carregado!")
+print("Bem-vindo, " .. adminUser .. "!")

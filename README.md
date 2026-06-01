@@ -1,4 +1,5 @@
 # ⚔️ TSB Admin Tool v2.0
+
 **The Strongest Battlegrounds - Sistema Completo de Admin & Player Tool**
 
 ---
