@@ -1,6 +1,6 @@
--- TSB Admin Tool - Launcher Principal v2.0
+-- TSB Admin Tool - Launcher Principal v2.1
 -- Múltiplos Scripts com Seleção Dinâmica
--- Versões: Free (com Key) e Admin (LOS67ZITOSDIZEN67)
+-- Versões: Free (com Key) e Admin (com Key)
 -- PlaceID: 10449761463
 
 if _G.TSBLauncherLoaded then
@@ -17,16 +17,15 @@ local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerName = player.Name
-local adminUser = "LOS67ZITOSDIZEN67"
-local isAdmin = (playerName == adminUser)
 
 -- ============ CONFIGURAÇÃO ============
 local PLACEIDS = {10449761463} -- Apenas TSB
 local CURRENT_PLACEID = game.PlaceId
 local KEYS_PASTEBIN_URL = "https://pastebin.com/raw/YOURKEY"
+local ADMIN_KEY_PASTEBIN_URL = "https://pastebin.com/raw/YOURKEY"
 local DISCORD_LINK = "https://discord.gg/JtE2rx2eGx"
 
--- Gera key semanal automaticamente
+-- Gera key semanal automaticamente (Free)
 local function generateWeeklyKey()
     local keywords = {
         "Alpha", "Beta", "Delta", "Epsilon", "Gamma",
@@ -47,9 +46,9 @@ local function generateWeeklyKey()
 end
 
 -- Carrega key remota (com validação)
-local function getRemoteKey()
+local function getRemoteKey(url)
     local success, response = pcall(function()
-        return game:HttpGet(KEYS_PASTEBIN_URL)
+        return game:HttpGet(url)
     end)
     if success then
         return response:match("%S+") -- Remove espaços
@@ -162,112 +161,132 @@ bodyScroll.FillDirection = Enum.FillDirection.Vertical
 bodyScroll.SortOrder = Enum.SortOrder.LayoutOrder
 bodyScroll.Parent = body
 
--- ============ AUTENTICAÇÃO ============
-if isAdmin then
-    local adminLabel = Instance.new("TextLabel")
-    adminLabel.Size = UDim2.new(1, 0, 0, 35)
-    adminLabel.BackgroundColor3 = THEME.Primary
-    adminLabel.TextColor3 = THEME.Text
-    adminLabel.Text = "👑 ADMIN MODE - Bem-vindo " .. playerName
-    adminLabel.TextSize = 13
-    adminLabel.Font = Enum.Font.GothamBold
-    adminLabel.BorderSizePixel = 0
-    adminLabel.LayoutOrder = 1
-    adminLabel.Parent = body
-    
-    local adminCorner = Instance.new("UICorner")
-    adminCorner.CornerRadius = UDim.new(0, 8)
-    adminCorner.Parent = adminLabel
-else
-    -- Key Input
-    local keyInput = Instance.new("TextBox")
-    keyInput.Size = UDim2.new(1, 0, 0, 40)
-    keyInput.BackgroundColor3 = THEME.Secondary
-    keyInput.TextColor3 = THEME.Text
-    keyInput.PlaceholderText = "Cole sua KEY aqui..."
-    keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
-    keyInput.TextSize = 12
-    keyInput.Font = Enum.Font.Gotham
-    keyInput.BorderSizePixel = 0
-    keyInput.ClearTextOnFocus = false
-    keyInput.LayoutOrder = 1
-    keyInput.Parent = body
-    
-    local keyCorner = Instance.new("UICorner")
-    keyCorner.CornerRadius = UDim.new(0, 8)
-    keyCorner.Parent = keyInput
-    
-    _G.KeyInput = keyInput
-end
+-- ============ TÍTULO INICIAL ============
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.BackgroundColor3 = THEME.Primary
+titleLabel.TextColor3 = THEME.Text
+titleLabel.Text = "👤 " .. playerName .. " | Selecione uma versão"
+titleLabel.TextSize = 12
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.BorderSizePixel = 0
+titleLabel.LayoutOrder = 1
+titleLabel.Parent = body
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleLabel
+
+-- ============ ADMIN KEY INPUT ============
+local adminKeyInput = Instance.new("TextBox")
+adminKeyInput.Size = UDim2.new(1, 0, 0, 40)
+adminKeyInput.BackgroundColor3 = THEME.Secondary
+adminKeyInput.TextColor3 = THEME.Text
+adminKeyInput.PlaceholderText = "Cole sua ADMIN KEY aqui..."
+adminKeyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+adminKeyInput.TextSize = 12
+adminKeyInput.Font = Enum.Font.Gotham
+adminKeyInput.BorderSizePixel = 0
+adminKeyInput.ClearTextOnFocus = false
+adminKeyInput.LayoutOrder = 2
+adminKeyInput.Parent = body
+
+local adminKeyCorner = Instance.new("UICorner")
+adminKeyCorner.CornerRadius = UDim.new(0, 8)
+adminKeyCorner.Parent = adminKeyInput
+
+_G.AdminKeyInput = adminKeyInput
+
+-- ============ FREE KEY INPUT ============
+local freeKeyInput = Instance.new("TextBox")
+freeKeyInput.Size = UDim2.new(1, 0, 0, 40)
+freeKeyInput.BackgroundColor3 = THEME.Secondary
+freeKeyInput.TextColor3 = THEME.Text
+freeKeyInput.PlaceholderText = "Cole sua FREE KEY aqui..."
+freeKeyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+freeKeyInput.TextSize = 12
+freeKeyInput.Font = Enum.Font.Gotham
+freeKeyInput.BorderSizePixel = 0
+freeKeyInput.ClearTextOnFocus = false
+freeKeyInput.LayoutOrder = 3
+freeKeyInput.Parent = body
+
+local freeKeyCorner = Instance.new("UICorner")
+freeKeyCorner.CornerRadius = UDim.new(0, 8)
+freeKeyCorner.Parent = freeKeyInput
+
+_G.FreeKeyInput = freeKeyInput
 
 -- ============ SCRIPTS DISPONÍVEIS ============
 local scripts = {
     {
-        name = "🔥 MAIN ADMIN TOOL",
-        desc = "Ferramentas completas de admin",
+        name = "🔥 ADMIN TOOL",
+        desc = "Acesso completo com Admin KEY",
         version = "admin",
-        order = 2
+        order = 4,
+        keyInput = adminKeyInput
     },
     {
         name = "💨 FREE PLAYER SCRIPT",
-        desc = "Script para jogadores normais",
+        desc = "Funcionalidades limitadas com FREE KEY",
         version = "free",
-        order = 3
+        order = 5,
+        keyInput = freeKeyInput
     },
 }
 
 -- Renderizar botões
 for _, scriptData in ipairs(scripts) do
-    if isAdmin or scriptData.version == "free" then
-        local container = Instance.new("Frame")
-        container.Size = UDim2.new(1, 0, 0, 50)
-        container.BackgroundTransparency = 1
-        container.LayoutOrder = scriptData.order
-        container.Parent = body
-        
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 1, 0)
-        btn.BackgroundColor3 = THEME.Primary
-        btn.TextColor3 = THEME.Text
-        btn.Text = scriptData.name .. "\n" .. scriptData.desc
-        btn.TextSize = 12
-        btn.Font = Enum.Font.GothamBold
-        btn.BorderSizePixel = 0
-        btn.TextWrapped = true
-        btn.Parent = container
-        
-        local btnCorner = Instance.new("UICorner")
-        btnCorner.CornerRadius = UDim.new(0, 8)
-        btnCorner.Parent = btn
-        
-        btn.MouseButton1Click:Connect(function()
-            if not isAdmin and not _G.KeyInput.Text:match("%S") then
-                _G.KeyInput.BackgroundColor3 = THEME.Error
-                wait(0.5)
-                _G.KeyInput.BackgroundColor3 = THEME.Secondary
-                return
-            end
-            
-            local remoteKey = getRemoteKey()
-            if not isAdmin and _G.KeyInput.Text ~= remoteKey then
-                _G.KeyInput.BackgroundColor3 = THEME.Error
-                _G.KeyInput.Text = "KEY INVÁLIDA!"
-                wait(2)
-                _G.KeyInput.Text = ""
-                _G.KeyInput.BackgroundColor3 = THEME.Secondary
-                return
-            end
-            
-            mainFrame.Visible = false
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 50)
+    container.BackgroundTransparency = 1
+    container.LayoutOrder = scriptData.order
+    container.Parent = body
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundColor3 = THEME.Primary
+    btn.TextColor3 = THEME.Text
+    btn.Text = scriptData.name .. "\n" .. scriptData.desc
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    btn.TextWrapped = true
+    btn.Parent = container
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        -- Validar KEY
+        if not scriptData.keyInput.Text:match("%S") then
+            scriptData.keyInput.BackgroundColor3 = THEME.Error
             wait(0.5)
-            
-            if scriptData.version == "admin" then
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermelourencoramos051-ship-it/shadowsama/main/main_admin.lua"))()
-            else
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermelourencoramos051-ship-it/shadowsama/main/main_free.lua"))()
-            end
-        end)
-    end
+            scriptData.keyInput.BackgroundColor3 = THEME.Secondary
+            return
+        end
+        
+        local remoteKey = getRemoteKey(scriptData.version == "admin" and ADMIN_KEY_PASTEBIN_URL or KEYS_PASTEBIN_URL)
+        if scriptData.keyInput.Text ~= remoteKey then
+            scriptData.keyInput.BackgroundColor3 = THEME.Error
+            local originalText = scriptData.keyInput.Text
+            scriptData.keyInput.Text = "KEY INVÁLIDA!"
+            wait(2)
+            scriptData.keyInput.Text = originalText
+            scriptData.keyInput.BackgroundColor3 = THEME.Secondary
+            return
+        end
+        
+        mainFrame.Visible = false
+        wait(0.5)
+        
+        if scriptData.version == "admin" then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermelourencoramos051-ship-it/shadowsama/main/main_admin.lua"))()
+        else
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermelourencoramos051-ship-it/shadowsama/main/main_free.lua"))()
+        end
+    end)
 end
 
 -- ============ DISCORD BUTTON ============
@@ -324,5 +343,5 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 print("✓ TSB Launcher iniciado!")
-print("Versão:", isAdmin and "ADMIN" or "FREE")
 print("Tecla: ] para abrir/fechar")
+print("Digite as KEYs nos campos correspondentes")

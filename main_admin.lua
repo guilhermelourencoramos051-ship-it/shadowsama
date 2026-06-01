@@ -1,5 +1,5 @@
--- TSB ADMIN TOOL - VERSÃO ADMIN
--- Apenas para: LOS67ZITOSDIZEN67
+-- TSB ADMIN TOOL - VERSÃO ADMIN v2.1
+-- Com sistema de KEY de admin
 -- PlaceID: 10449761463
 
 if _G.TSBAdminLoaded then
@@ -23,11 +23,11 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
 
 -- ============ CONFIGURAÇÃO ============
-local adminUser = "LOS67ZITOSDIZEN67"
-local isRealAdmin = (player.Name == adminUser)
+local ADMIN_USER = "Bandidoqur67rezenh"
+local isRealAdmin = (player.Name == ADMIN_USER)
 
 if not isRealAdmin then
-    warn("Acesso negado! Apenas admin pode usar esta versão.")
+    warn("⚠️ Acesso negado! Você não é o admin.")
     return
 end
 
@@ -828,4 +828,4 @@ player.CharacterAdded:Connect(function(newChar)
 end)
 
 print("✓ TSB Admin Tool carregado!")
-print("Bem-vindo, " .. adminUser .. "!")
+print("Bem-vindo, " .. ADMIN_USER .. "!")
